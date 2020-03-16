@@ -15,7 +15,7 @@ clobber: clean	## remove virtual python environment
 test: fmt run_test
 
 fmt:        ## runs code formatter
-	black $(find src -name \*.py) tests/*.py
+	black $(shell find src -name '*.py') tests/*.py
 
 dist: src/datadog_export/*.py README.md setup.py Pipfile.lock ## create a distribution
 	pipenv run python setup.py bdist_wheel

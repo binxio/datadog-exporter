@@ -33,7 +33,7 @@ class DateTime(click.ParamType):
             return self.to_utc(value)
 
         try:
-            if isinstance(value, str) and value[0] in ['+', '-']:
+            if isinstance(value, str) and value[0] in ["+", "-"]:
                 duration = durations.Duration(value)
                 now = datetime.now()
                 st = now.replace(second=0, microsecond=0)
@@ -43,4 +43,6 @@ class DateTime(click.ParamType):
             return st
         except ValueError as e:
             self.fail(f'Could not parse "{value}" into datetime ({e})', param, ctx)
+
+
 1

@@ -69,42 +69,48 @@ class Exporter(object):
             rate_limit.period,
             rate_limit.reset,
         )
-        logging.info('datadog-export metrics --start-time %s --end-time %s --window "%s" "%s"',
-                            self.start_time.isoformat(), self.end_time.isoformat(), self.window.representation, query)
+        logging.info(
+            'datadog-export metrics --start-time %s --end-time %s --window "%s" "%s"',
+            self.start_time.isoformat(),
+            self.end_time.isoformat(),
+            self.window.representation,
+            query,
+        )
 
-    def _get(self, st:datetime, et: datetime, query:str) -> requests.Response:
+    def _get(self, st: datetime, et: datetime, query: str) -> requests.Response:
         return requests.get(
             "https://api.datadoghq.com/api/v1/query",
             headers=get_headers(self.account),
             params={
                 "from": int(st.timestamp()),
                 "to": int(et.timestamp()),
-                "query": query
+                "query": query,
             },
         )
 
-
     @staticmethod
     def to_datetime(ts: float) -> datetime:
-        result = datetime.fromtimestamp(ts/1000)
+        result = datetime.fromtimestamp(ts / 1000)
         result = result + timedelta(microseconds=ts % 1000)
         return result
 
     def convert_to_timestamps(self, response):
         r = deepcopy(response)
-        if 'from_date' in r:
+        if "from_date" in r:
             r["from_date"] = self.to_datetime(r["from_date"]).isoformat()
             r["to_date"] = self.to_datetime(r["to_date"]).isoformat()
         for s in r["series"]:
-            s["start"] =  self.to_datetime(s["start"]).isoformat()
-            s["end"] =  self.to_datetime(s["end"]).isoformat()
+            s["start"] = self.to_datetime(s["start"]).isoformat()
+            s["end"] = self.to_datetime(s["end"]).isoformat()
             for point in s["pointlist"]:
                 point[0] = self.to_datetime(point[0]).isoformat()
         return r
 
     def export(self, query):
 
-        logging.info(f'exporting from {self.start_time} to {self.end_time} in {self.window} steps')
+        logging.info(
+            f"exporting from {self.start_time} to {self.end_time} in {self.window} steps"
+        )
         st = self.start_time
         while st < self.end_time:
             et = st + timedelta(seconds=self.window.to_seconds())
@@ -134,10 +140,10 @@ class Exporter(object):
 
 def EventsExporter(Exporter):
     def __init__(self):
-        super(EventsExporter,self).__init__()
+        super(EventsExporter, self).__init__()
         self.sources = []
 
-    def _get(self, st:datetime, et: datetime, query:str) -> requests.Response:
+    def _get(self, st: datetime, et: datetime, query: str) -> requests.Response:
         return requests.get(
             "https://api.datadoghq.com/api/v1/query",
             headers=self.headers(self.account),
@@ -147,6 +153,7 @@ def EventsExporter(Exporter):
                 "query": query,
             },
         )
+
 
 @click.group()
 def main():
@@ -169,7 +176,7 @@ def main():
     required=False,
     default=".*",
     type=click_argument_types.RegEx(),
-    help="regular expression of metrics to list, default .*"
+    help="regular expression of metrics to list, default .*",
 )
 def list_metrics_names(account: str, start_time: datetime, pattern: re.Pattern):
     exporter = Exporter()
@@ -181,11 +188,11 @@ def list_metrics_names(account: str, start_time: datetime, pattern: re.Pattern):
         print(metric)
 
 
-
-
-
-def metric_window(start_time: datetime, end_time:datetime, window: Duration) -> (datetime, datetime):
+def metric_window(
+    start_time: datetime, end_time: datetime, window: Duration
+) -> (datetime, datetime):
     from pytz import UTC
+
     now = datetime.now().astimezone(UTC).replace(second=0, microsecond=0)
 
     if int(window.seconds / 3600):
@@ -201,6 +208,7 @@ def metric_window(start_time: datetime, end_time:datetime, window: Duration) -> 
         end_time = now
 
     return (start_time, end_time)
+
 
 @main.command(name="metrics")
 @click.option(
@@ -266,7 +274,7 @@ def export_metrics(
 )
 @click.argument("query", required=True, nargs=-1)
 def export_metrics(
-        account: str, start_time: datetime, end_time: datetime, window: Duration, query
+    account: str, start_time: datetime, end_time: datetime, window: Duration, query
 ):
     start_time, end_time = metric_window(start_time, end_time, window)
     exporter = Exporter()
@@ -278,7 +286,6 @@ def export_metrics(
     exporter.connect()
     for q in query:
         exporter.export(q)
-
 
 
 if __name__ == "__main__":

@@ -39,7 +39,9 @@ def read(section: str = "DEFAULT"):
     parser.read(path.expanduser("~/.datadog.ini"))
     return {k: v for (k, v) in parser.items(section) if k in allowed_properties}
 
+
 os.environ
+
 
 def connect(section: str = "DEFAULT") -> dict:
     kwargs = read(section)

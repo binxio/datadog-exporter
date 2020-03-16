@@ -13,7 +13,6 @@ class RegEx(click.ParamType):
     def __init__(self):
         pass
 
-
     def convert(self, value, param, ctx) -> re.Pattern:
         if value is None:
             return value
