@@ -18,6 +18,7 @@ fmt:        ## runs code formatter
 	black $(shell find src -name '*.py') tests/*.py
 
 dist: src/datadog_export/*.py README.md setup.py Pipfile.lock ## create a distribution
+	rm -rf dist/*
 	pipenv run python setup.py bdist_wheel
 
 clean:		## remove all intermediate files

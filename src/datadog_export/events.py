@@ -100,9 +100,9 @@ class EventsExporter(Exporter):
 @click.option(
     "--window",
     required=False,
-    default=Duration("1h"),
+    default=Duration("24h"),
     type=click_argument_types.Duration(),
-    help="size of an export window, default 1h",
+    help="size of an export window, default 24h",
 )
 @click.option(
     "--iso-datetime/--no-iso-datetime",

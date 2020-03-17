@@ -91,10 +91,17 @@ class Exporter(object):
     def process(self, response: dict):
         self.write(response)
 
+    def export_started(self):
+        pass
+
+    def export_completed(self):
+        pass
+
     def export(self):
         logging.info(
             f"exporting from {self.start_time} to {self.end_time} in {self.window} steps"
         )
+        self.export_started()
         st = self.start_time
         while st < self.end_time:
             et = st + timedelta(seconds=self.window.to_seconds())
@@ -113,3 +120,4 @@ class Exporter(object):
                 exit(1)
             else:
                 self.export_rate_limit_exceeded(response)
+        self.export_completed()
