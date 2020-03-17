@@ -12,7 +12,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='datadog-exporter',
-    version="0.6.1",
+    version="0.6.2",
     url='https://github.com/binxio/datadog-exporter',
     license='Apache2',
     author='Mark van Holsteijn',
@@ -31,7 +31,7 @@ setup(
     test_suite='tests',
     entry_points={
         'console_scripts': [
-            'datadog-export = datadog_export.__main__:main'
+            'datadog-exporter = datadog_export.__main__:main'
         ],
     },
     classifiers=[
