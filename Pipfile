@@ -5,6 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 git-release-tag = "*"
+twine = "*"
 
 [packages]
 datadog-exporter = {editable = true,path = "."}
