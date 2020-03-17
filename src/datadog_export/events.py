@@ -105,6 +105,18 @@ class EventsExporter(Exporter):
     help="size of an export window, default 1h",
 )
 @click.option(
+    "--iso-datetime/--no-iso-datetime",
+    required=False,
+    default=False,
+    help="output timestamps in iso format",
+)
+@click.option(
+    "--pretty-print/--no-pretty-print",
+    required=False,
+    default=False,
+    help="output json in pretty print",
+)
+@click.option(
     "--source", required=False, type=str, multiple=True, help="to filter events on"
 )
 @click.option(
@@ -132,6 +144,8 @@ def main(
     start_time: datetime,
     end_time: datetime,
     window: Duration,
+    iso_datetime: bool,
+    pretty_print: bool,
     source: Optional[List[str]],
     tag: Optional[List[str]],
     priority: Optional[str],
@@ -142,6 +156,8 @@ def main(
     export datadog events.
     """
     exporter = EventsExporter(account, start_time, end_time, window)
+    exporter.iso_date_formats = iso_datetime
+    exporter.pretty_print = pretty_print
     exporter.sources = source
     exporter.tags = tag
     exporter.priority = priority

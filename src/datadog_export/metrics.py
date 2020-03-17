@@ -82,14 +82,34 @@ class MetricsExporter(Exporter):
     type=click_argument_types.Duration(),
     help="size of an export window, default 24h",
 )
+@click.option(
+    "--iso-datetime/--no-iso-datetime",
+    required=False,
+    default=False,
+    help="output timestamps in iso format",
+)
+@click.option(
+    "--pretty-print/--no-pretty-print",
+    required=False,
+    default=False,
+    help="output json in pretty print",
+)
 @click.argument("query", required=True, nargs=-1)
 def main(
-    account: str, start_time: datetime, end_time: datetime, window: Duration, query
+    account: str,
+    start_time: datetime,
+    end_time: datetime,
+    window: Duration,
+    iso_datetime: bool,
+    pretty_print: bool,
+    query,
 ):
     """
     export datadog metrics.
     """
-    exporter = Exporter(account, start_time, end_time, window)
+    exporter = MetricsExporter(account, start_time, end_time, window)
+    exporter.iso_date_formats = iso_datetime
+    exporter.pretty_print = pretty_print
     exporter.connect()
     for q in query:
         exporter.query = q

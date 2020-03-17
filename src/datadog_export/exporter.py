@@ -74,15 +74,7 @@ class Exporter(object):
         return get_headers(self.account)
 
     def _get(self, st: datetime, et: datetime) -> requests.Response:
-        return requests.get(
-            "https://api.datadoghq.com/api/v1/query",
-            headers=get_headers(self.account),
-            params={
-                "from": int(st.timestamp()),
-                "to": int(et.timestamp()),
-                "query": self.query,
-            },
-        )
+        raise Exception("not implemented")
 
     @staticmethod
     def to_datetime(ts: float) -> datetime:
