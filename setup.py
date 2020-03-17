@@ -11,13 +11,13 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='datadog-export',
-    version="0.6.0",
+    name='datadog-exporter',
+    version="0.6.1",
     url='https://github.com/binxio/datadog-exporter',
     license='Apache2',
     author='Mark van Holsteijn',
     author_email='mark@binx.io',
-    description='CLI and Lambda for exporting datadog metrics',
+    description='CLI for exporting datadog metrics',
     long_description=long_description,
     long_description_content_type='text/markdown',
     package_dir={'': 'src'},
