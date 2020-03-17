@@ -1,0 +1,5 @@
+for i in fail ok ; do
+	DOWNTIME_REPORTED=$(jq '.series | map({metric: .metric, pointlist: .pointlist[] | select(.[1] < 1) | .}) | select(any)' $i)
+	echo $i 
+	echo $DOWNTIME_REPORTED
+done
