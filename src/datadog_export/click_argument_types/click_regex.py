@@ -1,5 +1,5 @@
-import re
-
+from re import Pattern, compile
+from typing import Optional
 import click
 
 
@@ -13,14 +13,14 @@ class RegEx(click.ParamType):
     def __init__(self):
         pass
 
-    def convert(self, value, param, ctx) -> re.Pattern:
+    def convert(self, value, param, ctx) -> Optional[Pattern]:
         if value is None:
             return value
 
-        if isinstance(value, re.Pattern):
+        if isinstance(value, Pattern):
             return value
 
         try:
-            return re.compile(value)
+            return compile(value)
         except ValueError as e:
             self.fail(f'Could not parse "{value}" into regex pattern ({e})', param, ctx)

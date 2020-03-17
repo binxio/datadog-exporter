@@ -1,6 +1,7 @@
 import os
 from configparser import ConfigParser
 from os import path
+import logging
 
 from datadog import initialize
 
@@ -40,9 +41,6 @@ def read(section: str = "DEFAULT"):
     return {k: v for (k, v) in parser.items(section) if k in allowed_properties}
 
 
-os.environ
-
-
 def connect(section: str = "DEFAULT") -> dict:
     kwargs = read(section)
     if (
@@ -54,10 +52,10 @@ def connect(section: str = "DEFAULT") -> dict:
     ):
         initialize(**kwargs)
     else:
-        sys.stderr.write(
-            f"ERROR: api_key/app_key missing from ~/.datadog.ini in the section {section}\n"
+        logging.error(
+            f" api_key/app_key missing from ~/.datadog.ini in the section {section}"
         )
-        sys.exit(1)
+        exit(1)
     return kwargs
 
 

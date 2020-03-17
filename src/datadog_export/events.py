@@ -1,46 +1,155 @@
-from datetime import datetime
-import requests
-from durations import Duration
-from typing import Optional,List
-from copy import deepcopy
-import sys, json
 import logging
-from datadog_export.exporter import  Exporter
+from copy import deepcopy
+from datetime import datetime
+from typing import List, Optional
 
-class MetricsExporter(Exporter):
-    def __init__(self, start_time:Optional[datetime], end_time:datetime, window: Duration):
-        super(MetricsExporter,self).__init__(start_time, end_time, window)
+import click
+import pytz
+import requests
+from re import Pattern, compile
+from datadog_export import click_argument_types
+from datadog_export.exporter import Exporter
+from durations import Duration
 
-    def _get(self, st: datetime, et: datetime, query: str) -> requests.Response:
-        return requests.get(
-            "https://api.datadoghq.com/api/v1/query",
-            headers=self.get_headers(self.account),
-            params={
-                "from": int(st.timestamp()),
-                "to": int(et.timestamp()),
-                "query": query,
-            },
-        )
+
+class EventsExporter(Exporter):
+    def __init__(
+        self,
+        account: str,
+        start_time: Optional[datetime],
+        end_time: datetime,
+        window: Duration,
+    ):
+        super(EventsExporter, self).__init__(account, start_time, end_time, window)
+        self.sources = []
+        self.tags = []
+        self.aggregated: bool = True
+        self.priority: str = None
+        self.query = None
+        self.pattern: Pattern = None
 
     def convert_to_timestamps(self, response):
         if not self.iso_date_formats:
             return response
 
         r = deepcopy(response)
-        if "from_date" in r:
-            r["from_date"] = self.to_datetime(r["from_date"]).isoformat()
-            r["to_date"] = self.to_datetime(r["to_date"]).isoformat()
-        for s in r["series"]:
-            s["start"] = self.to_datetime(s["start"]).isoformat()
-            s["end"] = self.to_datetime(s["end"]).isoformat()
-            for point in s["pointlist"]:
-                point[0] = self.to_datetime(point[0]).isoformat()
+        for e in r.get("events", []):
+            e["date_happened"] = self.to_datetime(e["date_happened"] * 1000).isoformat()
+            for c in e.get("children", []):
+                c["date_happened"] = self.to_datetime(
+                    c["date_happened"] * 1000
+                ).isoformat()
         return r
 
+    def event_matched(self, event):
+        return (
+            self.pattern is None
+            or self.pattern.findall(event.get("title", ""))
+            or self.pattern.findall(event.get("text", ""))
+        )
+
     def process(self, response):
-        if response["status"] != "error":
-            r = self.convert_to_timestamps(response)
-            json.dump(r, sys.stdout)
-        else:
-            logging.error(response["error"])
-            exit(1)
+        before = len(response["events"])
+        response["events"] = list(filter(self.event_matched, response["events"]))
+        after = len(response["events"])
+        if self.pattern:
+            logging.info(f"{after} out of {before} events matched")
+        r = self.convert_to_timestamps(response)
+        self.write(r)
+
+    def _get(self, st: datetime, et: datetime) -> requests.Response:
+        params = {
+            "start": int(st.timestamp()),
+            "end": int(et.timestamp()),
+            "aggregated": str(self.aggregated).lower(),
+        }
+
+        if self.sources:
+            params["sources"] = ",".join(self.sources)
+
+        if self.tags:
+            params["tags"] = ",".join(self.tags)
+
+        if self.priority:
+            params["priority"] = self.priority
+
+        return requests.get(
+            "https://api.datadoghq.com/api/v1/events",
+            headers=self.get_headers(),
+            params=params,
+        )
+
+
+@click.command(name="events")
+@click.option(
+    "--account", required=False, default="DEFAULT", help="name of the Datadog account."
+)
+@click.option(
+    "--start-time",
+    required=False,
+    type=click_argument_types.DateTime(),
+    help="of the export, default the previous time window",
+)
+@click.option(
+    "--end-time",
+    required=False,
+    default=datetime.now().astimezone(pytz.UTC).replace(second=0, microsecond=0),
+    type=click_argument_types.DateTime(),
+    help="of the export, default now",
+)
+@click.option(
+    "--window",
+    required=False,
+    default=Duration("1h"),
+    type=click_argument_types.Duration(),
+    help="size of an export window, default 1h",
+)
+@click.option(
+    "--source", required=False, type=str, multiple=True, help="to filter events on"
+)
+@click.option(
+    "--tag", required=False, type=str, multiple=True, help="to filter events on"
+)
+@click.option(
+    "--priority",
+    required=False,
+    type=click.Choice(["low", "normal"]),
+    help="to filter events on",
+)
+@click.option(
+    "--aggregated/--unaggregated",
+    required=False,
+    default=True,
+    help="add events initiated before start time",
+)
+@click.option(
+    "--pattern",
+    type=click_argument_types.RegEx(),
+    help="to search for in filter, default .*",
+)
+def main(
+    account: str,
+    start_time: datetime,
+    end_time: datetime,
+    window: Duration,
+    source: Optional[List[str]],
+    tag: Optional[List[str]],
+    priority: Optional[str],
+    aggregated: bool,
+    pattern: Optional[Pattern],
+):
+    """
+    export datadog events.
+    """
+    exporter = EventsExporter(account, start_time, end_time, window)
+    exporter.sources = source
+    exporter.tags = tag
+    exporter.priority = priority
+    exporter.aggregated = aggregated
+    exporter.pattern = pattern
+    exporter.connect()
+    exporter.export()
+
+
+if __name__ == "__main__":
+    main()

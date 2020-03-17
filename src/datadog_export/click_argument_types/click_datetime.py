@@ -2,9 +2,10 @@ from datetime import datetime, timedelta
 
 import click
 from dateutil.parser import parse
-from pytz import UTC
+import pytz
 from tzlocal import get_localzone
 import durations
+from typing import Optional
 
 
 class DateTime(click.ParamType):
@@ -23,9 +24,9 @@ class DateTime(click.ParamType):
         result = dt
         if not result.tzinfo:
             result = self.tz.localize(result)
-        return result.astimezone(UTC)
+        return result.astimezone(pytz.UTC)
 
-    def convert(self, value, param, ctx) -> datetime:
+    def convert(self, value, param, ctx) -> Optional[datetime]:
         if value is None:
             return value
 
@@ -43,6 +44,3 @@ class DateTime(click.ParamType):
             return st
         except ValueError as e:
             self.fail(f'Could not parse "{value}" into datetime ({e})', param, ctx)
-
-
-1

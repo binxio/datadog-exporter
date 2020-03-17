@@ -1,4 +1,4 @@
-from datetime import datetime
+from typing import Optional
 
 import click
 import durations
@@ -11,7 +11,7 @@ class Duration(click.ParamType):
 
     name = "duration"
 
-    def convert(self, value, param, ctx) -> durations.Duration:
+    def convert(self, value, param, ctx) -> Optional[durations.Duration]:
         if value is None:
             return value
 

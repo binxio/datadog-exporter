@@ -3,7 +3,7 @@ Datadog exporter
 """
 from setuptools import find_packages, setup
 
-dependencies = ['boto3', 'click', 'pytz', 'durations', 'tzlocal', 'datadog', 'requests']
+dependencies = ['boto3', 'click', 'pytz', 'durations', 'tzlocal', 'datadog', 'requests', 'python-dateutil']
 
 from os import path
 this_directory = path.abspath(path.dirname(__file__))
