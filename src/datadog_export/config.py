@@ -1,7 +1,7 @@
 import os
 from configparser import ConfigParser
 from os import path
-import logging
+from datadog_export.logger import log
 
 from datadog import initialize
 
@@ -56,7 +56,7 @@ def connect(section: str = "DEFAULT") -> dict:
     if kwargs.get("api_key") and kwargs.get("app_key"):
         initialize(**kwargs)
     else:
-        logging.error(
+        log.error(
             f"api_key/app_key missing from the environment and ~/.datadog.ini in the section {section}"
         )
         exit(1)

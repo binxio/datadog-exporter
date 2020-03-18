@@ -1,4 +1,4 @@
-import logging
+from datadog_export.logger import log
 from copy import deepcopy
 from datetime import datetime
 from typing import Optional
@@ -54,7 +54,7 @@ class MetricsExporter(Exporter):
             r = self.convert_to_timestamps(response)
             self.write(r)
         else:
-            logging.error(response["error"])
+            log.error(response["error"])
             exit(1)
 
 
@@ -64,16 +64,16 @@ class MetricsExporter(Exporter):
 )
 @click.option(
     "--start-time",
-    required=False,
+    required=True,
     type=click_argument_types.DateTime(),
-    help="of the export, default the previous 24 hours",
+    help="of the export. either a duration, date or timestamp",
 )
 @click.option(
     "--end-time",
     required=False,
     default=datetime.now().astimezone(pytz.UTC).replace(second=0, microsecond=0),
     type=click_argument_types.DateTime(),
-    help="of the export, default now",
+    help="of the export. either a duration, date or timestamp. default now.",
 )
 @click.option(
     "--window",

@@ -1,4 +1,4 @@
-import logging
+from datadog_export.logger import log
 from copy import deepcopy
 from datetime import datetime
 from typing import List, Optional
@@ -53,7 +53,7 @@ class EventsExporter(Exporter):
         response["events"] = list(filter(self.event_matched, response["events"]))
         after = len(response["events"])
         if self.pattern:
-            logging.info(f"{after} out of {before} events matched")
+            log.info(f"{after} out of {before} events matched")
         r = self.convert_to_timestamps(response)
         self.write(r)
 
@@ -86,16 +86,16 @@ class EventsExporter(Exporter):
 )
 @click.option(
     "--start-time",
-    required=False,
+    required=True,
     type=click_argument_types.DateTime(),
-    help="of the export, default the previous time window",
+    help="of the export. either a duration, date or timestamp",
 )
 @click.option(
     "--end-time",
     required=False,
     default=datetime.now().astimezone(pytz.UTC).replace(second=0, microsecond=0),
     type=click_argument_types.DateTime(),
-    help="of the export, default now",
+    help="of the export. either a duration, date or timestamp. default now",
 )
 @click.option(
     "--window",

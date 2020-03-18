@@ -1,4 +1,4 @@
-import logging
+from datadog_export.logger import log
 
 import click
 import os

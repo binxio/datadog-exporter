@@ -1,5 +1,5 @@
 import json
-import logging
+from datadog_export.logger import log
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -62,7 +62,7 @@ class Exporter(object):
 
     def export_rate_limit_exceeded(self, response):
         rate_limit = RateLimit(response.headers)
-        logging.error(
+        log.error(
             "rate limit exceeded of %s calls to  %s in %ss, retry in %ss",
             rate_limit.limit,
             response.url,
@@ -98,7 +98,7 @@ class Exporter(object):
         pass
 
     def export(self):
-        logging.info(
+        log.info(
             f"exporting from {self.start_time} to {self.end_time} in {self.window} steps"
         )
         self.export_started()
@@ -111,7 +111,7 @@ class Exporter(object):
                 st = st + timedelta(seconds=self.window.to_seconds())
 
             elif response.status_code != 429:
-                logging.error(
+                log.error(
                     "%s for %s returned %s, %s",
                     response.request.url,
                     response.status_code,
