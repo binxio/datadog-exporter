@@ -12,7 +12,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='datadog-exporter',
-    version="0.6.3",
+    version="0.6.4",
     url='https://github.com/binxio/datadog-exporter',
     license='Apache2',
     author='Mark van Holsteijn',
