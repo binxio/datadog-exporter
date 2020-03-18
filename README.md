@@ -31,9 +31,8 @@ to export specific metrics from the last 24 hours, type:
 The `--window` option allows you to influence the resolution of the values returned. 
 
 # credentials
-The file ~/.datadog.ini is a Python configuration file from which the Datadog i
-connection parameters are read.  At least it will
-need the `api_key` and `api_app` attributes in the section DEFAULT::
+Add your Datadog Application and API key in the file `$HOME/.datadog.ini` in the
+section DEFAULT:
 
 	[DEFAULT]
 	api_key=a77aaaaaaaaaaaaaaaaaaaaa
