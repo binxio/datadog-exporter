@@ -38,22 +38,26 @@ def read(section: str = "DEFAULT"):
     """
     parser = ConfigParser()
     parser.read(path.expanduser("~/.datadog.ini"))
-    return {k: v for (k, v) in parser.items(section) if k in allowed_properties}
+    result = {k: v for (k, v) in parser.items(section) if k in allowed_properties}
+    if not result.get("api_key"):
+        result["api_key"] = os.environ.get(
+            "DATADOG_API_KEY", os.environ.get("DD_API_KEY")
+        )
+    if not result.get("app_key"):
+        result["app_key"] = os.environ.get(
+            "DATADOG_APP_KEY", os.environ.get("DD_APP_KEY")
+        )
+    return result
 
 
 def connect(section: str = "DEFAULT") -> dict:
     kwargs = read(section)
-    if (
-        "api_key" in kwargs
-        or os.environ.get("DATADOG_API_KEY", os.environ.get("DD_API_KEY"))
-    ) and (
-        "app_key" in kwargs
-        or os.environ.get("DATADOG_APP_KEY", os.environ.get("DD_APP_KEY"))
-    ):
+
+    if kwargs.get("api_key") and kwargs.get("app_key"):
         initialize(**kwargs)
     else:
         logging.error(
-            f" api_key/app_key missing from ~/.datadog.ini in the section {section}"
+            f"api_key/app_key missing from the environment and ~/.datadog.ini in the section {section}"
         )
         exit(1)
     return kwargs
