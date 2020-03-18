@@ -23,6 +23,16 @@ class MetricsExporter(Exporter):
         super(MetricsExporter, self).__init__(account, start_time, end_time, window)
         self.query = None
 
+    def export_started(self):
+        log.info(
+            f"exporting {self.query} from {self.start_time} to {self.end_time} in {self.window.representation} steps"
+        )
+
+    def export_started(self):
+        log.info(
+            f"exporting {self.query} from {self.start_time} to {self.end_time} in {self.window.representation} steps"
+        )
+
     def _get(self, st: datetime, et: datetime) -> requests.Response:
         return requests.get(
             "https://api.datadoghq.com/api/v1/query",

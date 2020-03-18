@@ -12,10 +12,18 @@ from durations import Duration
 
 class RateLimit(object):
     def __init__(self, headers: dict):
-        self.limit = int(headers["X-RateLimit-Limit"])
-        self.remaining = int(headers["X-RateLimit-Remaining"])
-        self.period = int(headers["X-RateLimit-Period"])
-        self.reset = int(headers["X-RateLimit-Reset"])
+        self.limit = int(headers.get("X-RateLimit-Limit", "0"))
+        self.remaining = int(headers.get("X-RateLimit-Remaining", "0"))
+        self.period = int(headers.get("X-RateLimit-Period", "0"))
+        self.reset = int(headers.get("X-RateLimit-Reset", "0"))
+
+    def __str__(self):
+        if self.limit:
+            return "rate limit of {limit} API calls per {period}s. {remaining} remaining, reset in {reset}s".format(
+                **self.__dict__
+            )
+        else:
+            return ""
 
 
 class Exporter(object):
@@ -63,7 +71,7 @@ class Exporter(object):
     def export_rate_limit_exceeded(self, response):
         rate_limit = RateLimit(response.headers)
         log.error(
-            "rate limit exceeded of %s calls to  %s in %ss, retry in %ss",
+            "rate limit exceeded of %s calls to %s in %ss, retry in %ss",
             rate_limit.limit,
             response.url,
             rate_limit.period,
@@ -92,20 +100,20 @@ class Exporter(object):
         self.write(response)
 
     def export_started(self):
-        pass
-
-    def export_completed(self):
-        pass
-
-    def export(self):
         log.info(
             f"exporting from {self.start_time} to {self.end_time} in {self.window} steps"
         )
+
+    def export_completed(self):
+        log.info(f"export complete. {self.ratelimit}")
+
+    def export(self):
         self.export_started()
         st = self.start_time
         while st < self.end_time:
             et = st + timedelta(seconds=self.window.to_seconds())
             response = self._get(st, et)
+            self.ratelimit = RateLimit(response.headers)
             if response.status_code == 200:
                 self.process(response.json())
                 st = st + timedelta(seconds=self.window.to_seconds())

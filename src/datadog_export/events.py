@@ -28,6 +28,11 @@ class EventsExporter(Exporter):
         self.query = None
         self.pattern: Pattern = None
 
+    def export_started(self):
+        log.info(
+            f"exporting events from {self.start_time} to {self.end_time} in {self.window.representation} steps"
+        )
+
     def convert_to_timestamps(self, response):
         if not self.iso_date_formats:
             return response

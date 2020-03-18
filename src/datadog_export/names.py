@@ -5,7 +5,9 @@ from typing import Optional, List
 import pytz
 from re import Pattern
 from datadog_export.exporter import Exporter
+from datadog_export.logger import log
 import click
+
 
 from datadog_export import click_argument_types
 
@@ -17,6 +19,9 @@ class MetricNamesExporter(Exporter):
         super(MetricNamesExporter, self).__init__(account, start_time, end_time, window)
         self.hosts = []
         self.metrics = []
+
+    def export_started(self):
+        log.info(f"exporting metric names from {self.start_time}")
 
     def _get(self, st: datetime, et: datetime) -> requests.Response:
         params = {"from": int(st.timestamp())}
