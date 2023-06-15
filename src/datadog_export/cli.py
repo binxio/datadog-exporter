@@ -1,5 +1,5 @@
 from datadog_export.logger import log
-
+import logging
 import click
 import os
 
