@@ -35,6 +35,7 @@ class Exporter(object):
         window: Duration,
     ):
         super(Exporter, self).__init__()
+        self.ratelimit = RateLimit({})
         self.account: str = account if account else "DEFAULT"
         self.window: Duration = window
         self.end_time: datetime = end_time
