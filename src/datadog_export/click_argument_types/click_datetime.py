@@ -23,7 +23,7 @@ class DateTime(click.ParamType):
     def to_utc(self, dt: datetime):
         result = dt
         if not result.tzinfo:
-            result = self.tz.localize(result)
+            result = result.astimezone(result.tzinfo)
         return result.astimezone(pytz.UTC)
 
     def convert(self, value, param, ctx) -> Optional[datetime]:
