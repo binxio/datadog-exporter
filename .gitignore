@@ -113,3 +113,6 @@ dmypy.json
 *.swp
 .idea/workspace.*
 .idea/tasks.*
+.idea/aws.xml
+.idea/jpa-buddy.xml
+
